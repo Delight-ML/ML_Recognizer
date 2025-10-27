@@ -1,0 +1,29 @@
+hile True:
+        try:
+            data = pd.read_csv(csv_path, sep=',', engine='python', on_bad_lines='skip', encoding='ISO-8859-1')
+            data.columns = data.columns.str.strip().str.capitalize()
+# Clean numeric columns (remove spaces and convert to floats)
+for col in ['Open', 'High', 'Low', 'Close']:
+    data[col] = data[col].astype(str).str.replace(' ', '').astype(float)
+                # Prevent training error if dataset is too small
+            if len(data) <= 1:
+                print("⚠️ Only one row of data found. Skipping training and prediction for now.")
+                continue
+            available_cols = [c for c in ['Open', 'High', 'Low', 'Close'] if c in data.columns]
+            if len(available_cols) < 4:
+                print(f"⚠️ CSV columns found: {list(data.columns)}")
+                print("Could not find all OHLC columns — check your file headers.")
+            else:
+                features = data[available_cols].tail(1)
+                prediction = model.predict(features)[0]
+                signal = "BUY" if prediction == 1 else "SELL"
+
+                if signal != last_signal:
+                    print(f"🟢 New Signal Detected: {signal}")
+                    last_signal = signal
+
+             except Exception as e:
+                print("Error during monitoring:", e)
+
+         time.sleep(refresh_rate)
+
